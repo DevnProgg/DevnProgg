@@ -68,7 +68,7 @@
                     <h3>Introduction</h3>
                     <p>
                       
-I spent the last few weeks building an authentication system from scratch in Go. Not because I enjoy reinventing wheels, but because I needed to deeply understand the security model for a side project—and honestly, most auth libraries felt like black boxes I didn't fully trust.
+I spent the last few weeks building an authentication system from scratch in Go. Not because I enjoy reinventing wheels, but because I needed to deeply understand the security model for a side project and honestly, most auth libraries felt like black boxes I didn't fully trust.
 
 <h4>The Problem</h4>
 
@@ -78,7 +78,7 @@ The requirements were straightforward: secure user registration and login, token
 <h4>What I Got Wrong Initially</h4>
 
 My first instinct was to use simple session cookies. Store a session ID, look it up in the database on every request—done. But as I sketched out the architecture, I realized this wouldn't work well for a mobile app I planned to add later. Cookies are a browser thing.
-I also initially underestimated how much security infrastructure I'd need beyond just "hash the passwords." Rate limiting, account lockouts, timing attack protection—these weren't nice-to-haves, they were essential.
+I also initially underestimated how much security infrastructure I'd need beyond just "hash the passwords." Rate limiting, account lockouts, timing attack protection these weren't nice-to-haves, they were essential.
 
 <h4>The Architecture I Landed On</h4>
 
@@ -99,7 +99,7 @@ The service layer handles all business logic—password hashing, token generatio
 <h3>Challenges I Hit</h3>
 
 Rate limiting per user vs per IP: My initial rate limiter only tracked IPs, which worked until I realized multiple users behind a corporate NAT would share limits. I ended up implementing per-route rate limiting instead—stricter limits on /login and /register, looser limits on token refresh.
-Constant-time comparison: I wrote a naive password comparison at first—just checking if the hashes matched with ==. A colleague pointed out this was vulnerable to timing attacks. Switched to subtle.ConstantTimeCompare(). These kinds of security subtleties are why auth is tricky.
+Constant-time comparison: I wrote a naive password comparison at first just checking if the hashes matched with ==. A colleague pointed out this was vulnerable to timing attacks. Switched to subtle.ConstantTimeCompare(). These kinds of security subtleties are why auth is tricky.
 Login attempt tracking: I wanted to lock accounts after 5 failed attempts, but realized I needed to track this in the database, not in memory. A server restart would reset the counter. Also had to decide: lock by email or by IP? I chose email to prevent an attacker from locking out legitimate users by spamming their email from different IPs.
 
 <h3>What I'd Do Differently</h3>
