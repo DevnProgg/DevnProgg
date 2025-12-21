@@ -64,6 +64,7 @@
                 <div class="col-xs-12">
                   <div class="blog-post">
                     <img src="../assets/images/blog-post-1.png" class="img-responsive" alt="">
+                    <a href="https://github.com/DevnProgg/TrafficCounter" target="_blank" style="font-size: large;">Source Code</a>
                     <h3>Introduction</h3>
                     <p>
                       
@@ -143,19 +144,19 @@ JSON struck the right balance: human-readable for debugging, easy to parse in Py
 During early testing, I noticed the script paused for 30+ seconds on first run, downloading the Segformer model from Hugging Face. I assumed the model would cache automatically, but I hadn't realized the cache location depended on environment variables.
 
 After digging through transformers documentation, I found that setting TRANSFORMERS_CACHE explicitly solved it. More importantly, I added a check to verify the model was cached before processing a batch of videos. This wasn't mentioned in the README, but it was critical for production use.
-
+<br />
 <b>Challenge 2: Frame Rate Mismatch Breaking Time-Series Analysis</b>
 
 The analytics script calculated "vehicles per minute" by dividing total counts by video duration. This worked fine until I tested on a video where the camera's actual frame rate (23.97 fps) didn't match the metadata (30 fps). OpenCV's cv2.CAP_PROP_FPS was giving me the wrong value.
 
 I had to calculate the real frame rate by dividing frame count by duration. The bug was subtle—charts showed traffic "spikes" that were actually just frame rate inconsistencies. I added validation to compare metadata FPS against calculated FPS and log a warning if they differed by more than 5%.
-
+<br />
 <b>Challenge 3: Memory Leak from Holding Frame References</b>
 
 After processing a 2-hour video, the script crashed with an out-of-memory error. I'd been appending detection results to a list for every frame, thinking I might need them later. With 144,000 frames, each storing bounding boxes and tracking IDs, I was holding gigabytes of data unnecessarily.
 
 The fix was embarrassingly simple: only aggregate what I needed (counts, timestamps, class labels) and discard per-frame details immediately. I kept a running sum instead of a full frame history. Memory usage dropped from 8GB to ~200MB for the same video.
-
+<br />
 <b>Challenge 4: Curved Roads Breaking Line Placement Logic</b>
 
 The road orientation calculation worked great for straight roads but failed on curves. I was computing a single angle from the segmented road mask, but a curved road doesn't have a single orientation. The counting line ended up diagonal when it should've been perpendicular to the local traffic flow.
