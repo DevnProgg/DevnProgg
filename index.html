@@ -15,9 +15,11 @@
   <link rel="apple-touch-icon" sizes="180x180" href="./assets/apple-icon-180x180.png">
   <link href="./assets/favicon.ico" rel="icon">
 
-  <title>Blog</title>  
+  <title>Lauren Qokolo | Software Engineer</title>  
 
-<link href="./main.3f6952e4.css" rel="stylesheet"></head>
+<link href="./main.3f6952e4.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="./home.css" rel="stylesheet"></head>
 
 <body class="minimal">
 <div id="site-border-left"></div>
@@ -70,7 +72,75 @@
       </div>
     </div>
   </div>
-  
+
+<div id="progress"></div>
+<div id="cosmos">
+  <canvas id="stars" aria-hidden="true"></canvas>
+
+  <section id="experience" class="cs">
+    <h2 class="cs-title" data-split>Where I've worked</h2>
+    <p class="cs-lead reveal">Three teams, three countries of code. Each one taught me something different about shipping software.</p>
+    <div class="timeline">
+      <div class="tl-line"><span id="tl-fill"></span></div>
+      <article class="tl-item" data-side="l">
+        <span class="tl-dot"></span>
+        <h3>Mileage Tech</h3>
+        <p class="tl-role">Web Developer &middot; Lesotho</p>
+        <p>Built and maintained responsive web applications, turning client needs into fast, reliable interfaces.</p>
+      </article>
+      <article class="tl-item" data-side="r">
+        <span class="tl-dot"></span>
+        <h3>Dr Lemoh Gen Trade</h3>
+        <p class="tl-role">Full Stack Software Engineer Intern &middot; Lesotho</p>
+        <p>Worked across the stack: APIs and databases on the back end, React interfaces on the front.</p>
+      </article>
+      <article class="tl-item" data-side="l">
+        <span class="tl-dot"></span>
+        <h3>Adjoaa LTD</h3>
+        <p class="tl-role">Backend Engineering Intern &middot; United Kingdom</p>
+        <p>Contributed to backend services, working remotely with an international team on server-side features.</p>
+      </article>
+    </div>
+  </section>
+
+  <section id="projects" class="cs">
+    <h2 class="cs-title" data-split>Things I've built</h2>
+    <div class="pj-grid">
+      <a class="pj" href="./Blogs/blog-post-1.html" data-speed="0.04">
+        <img src="./assets/images/blog-post-1.png" alt="Traffic analysis project">
+        <div><h3 style="color: aliceblue;">Computer Vision for Traffic Analysis</h3><p>Counting vehicles crossing a line in video, automatically.</p></div>
+      </a>
+      <a class="pj" href="./Blogs/blog-post-3.html" data-speed="-0.04">
+        <img src="./assets/img/blog3.jpg" alt="Basel III engine project">
+        <div><h3 style="color: aliceblue;">Basel III Regulatory Engine</h3><p>A Spring Boot calculation engine built for auditability and reproducibility.</p></div>
+      </a>
+      <a class="pj" href="./Blogs/blog-post-5.html" data-speed="0.08">
+        <img src="./assets/img/blog5.png" alt="AML detection project">
+        <div><h3 style="color: aliceblue;">Real-Time AML Detection in Go</h3><p>Rules, alerts and regulatory reporting for transaction monitoring.</p></div>
+      </a>
+    </div>
+    <a class="cs-btn reveal" href="./Pages/projects.html">See all projects</a>
+  </section>
+
+  <section id="blog" class="cs">
+    <h2 class="cs-title" data-split>From the blog</h2>
+    <a class="bl" href="./Blogs/blog-post-6.html">
+      <img src="./assets/img/blog6.png" alt="Tauri to Wails">
+      <div>
+        <h3 style="color: aliceblue;">Why I Chose Spring Boot for My Regulatory Reporting Automation System (Personal Project)</h3>
+        <p>When you’re building software that financial institutions rely on for regulatory compliance,
+    technology choices stop being academic  they become risk decisions.</p>
+        <span class="bl-more">Read the post</span>
+      </div>
+    </a>
+    <a class="cs-btn reveal" href="./Pages/blog.html">Browse all posts</a>
+  </section>
+
+  <footer class="cs-foot">
+    <p>&copy; Lauren Qokolo</p>
+    <a href="./Pages/contact.html">Get in touch</a>
+  </footer>
+</div>
 
 <script>
   document.addEventListener("DOMContentLoaded", function (event) {
@@ -80,6 +150,6 @@
 </script>
 
 
-<script type="text/javascript" src="./main.70a66962.js"></script></body>
+<script type="text/javascript" src="./main.70a66962.js"></script><script src="./home.js"></script></body>
 
 </html>
