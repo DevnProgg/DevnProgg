@@ -73,10 +73,10 @@
             <li>Transformer-based segmentation: Segformer</li>
             </ul>
             Classical CV failed immediately on worn roads and low-contrast footage. DeepLabV3 worked but was sluggish on CPU. Segformer hit the sweet spot: accurate enough for diverse road conditions, fast enough for preprocessing, and the Hugging Face transformers library made integration trivial. The trade-off was a larger model download (~100MB) on first run, but I accepted that for reliability.
-            For vehicle detection, YOLO was the obvious choice. I initially tried YOLOv8, but YOLO11 had just released and offered better small-object detection—critical for vehicles far from the camera. The performance difference was marginal on modern GPUs but noticeable on CPU inference, where I was spending most of my testing time.
+            For vehicle detection, YOLO was the obvious choice. I initially tried YOLOv8, but YOLO11 had just released and offered better small-object detection:critical for vehicles far from the camera. The performance difference was marginal on modern GPUs but noticeable on CPU inference, where I was spending most of my testing time.
             <h3>Tracking: Built-in vs. Custom</h3>
             YOLO's built-in tracking (using BoT-SORT) saved me from implementing a custom tracker. I'd initially planned to write a Kalman filter-based tracker, but after reading the ultralytics documentation, I realized their tracking was more sophisticated than anything I'd build in a weekend.
-            The trade-off: less control over tracking behavior. When vehicles occluded each other, the tracker occasionally swapped IDs. I had to accept ~2-3% counting errors from ID switches. For traffic analysis, this was acceptable—we cared about aggregate flow, not individual vehicle journeys.
+            The trade-off: less control over tracking behavior. When vehicles occluded each other, the tracker occasionally swapped IDs. I had to accept ~2-3% counting errors from ID switches. For traffic analysis, this was acceptable:we cared about aggregate flow, not individual vehicle journeys.
             <h3>Counting Logic: Centroid Crossing vs. Bounding Box Intersection</h3>
             I initially checked if a vehicle's entire bounding box crossed the line. This failed when large trucks straddled the line for multiple frames, causing duplicate counts. Switching to centroid crossing was simpler and more reliable: count once when the centroid transitions from one side of the line to the other.
             I stored the last-known side for each tracking ID in a dictionary. When a vehicle's centroid crossed, I incremented the counter and updated the dictionary. This stateful approach meant I had to handle ID persistence carefully, but it eliminated duplicates.
@@ -90,7 +90,7 @@
             <br/>
             <b>Challenge 2: Frame Rate Mismatch Breaking Time-Series Analysis</b>
             The analytics script calculated "vehicles per minute" by dividing total counts by video duration. This worked fine until I tested on a video where the camera's actual frame rate (23.97 fps) didn't match the metadata (30 fps). OpenCV's cv2.CAP_PROP_FPS was giving me the wrong value.
-            I had to calculate the real frame rate by dividing frame count by duration. The bug was subtle—charts showed traffic "spikes" that were actually just frame rate inconsistencies. I added validation to compare metadata FPS against calculated FPS and log a warning if they differed by more than 5%.
+            I had to calculate the real frame rate by dividing frame count by duration. The bug was subtle:charts showed traffic "spikes" that were actually just frame rate inconsistencies. I added validation to compare metadata FPS against calculated FPS and log a warning if they differed by more than 5%.
             <br/>
             <b>Challenge 3: Memory Leak from Holding Frame References</b>
             After processing a 2-hour video, the script crashed with an out-of-memory error. I'd been appending detection results to a list for every frame, thinking I might need them later. With 144,000 frames, each storing bounding boxes and tracking IDs, I was holding gigabytes of data unnecessarily.
@@ -105,9 +105,9 @@
             The statistics JSON schema grew organically and now feels inconsistent. Some fields are camelCase, others are snake_case. I'd design a proper schema upfront and use Pydantic for validation. This would catch schema mismatches between the detection and analytics scripts immediately.
             Finally, I'd add tests. Not for the ML models themselves, but for the counting logic, line-crossing detection, and data aggregation. These are pure functions that don't depend on model inference, yet I tested them manually every time I made changes.
             <h3>Lessons Learned</h3>
-            Model integration is harder than model selection. Choosing YOLO took 10 minutes. Making it work reliably with real video footage—handling edge cases, tuning confidence thresholds, managing tracking IDs—took days.
+            Model integration is harder than model selection. Choosing YOLO took 10 minutes. Making it work reliably with real video footage:handling edge cases, tuning confidence thresholds, managing tracking IDs:took days.
             Stateful systems need explicit state management. The tracking ID dictionary seemed like a minor implementation detail but became a central piece of the architecture. I should've designed it more carefully from the start, with clear rules for when IDs expire and how to handle gaps.
-            Preprocessing matters more than I expected. I spent more time on road segmentation and counting line placement than on the actual vehicle detection. Getting the geometry right was critical—no amount of fancy ML could fix a miscalibrated counting line.
+            Preprocessing matters more than I expected. I spent more time on road segmentation and counting line placement than on the actual vehicle detection. Getting the geometry right was critical:no amount of fancy ML could fix a miscalibrated counting line.
             Local-first was the right constraint. Forcing myself to avoid cloud APIs made the system portable and cost-effective. It runs anywhere Python runs, with no recurring costs or privacy concerns about uploading video footage.
             <h3>Who This Project Is For</h3>
             This system is ideal for:
@@ -126,9 +126,9 @@
             </ul>
             <h3>Closing Thoughts</h3>
             This project taught me that "simple" computer vision problems are rarely simple in practice. What looked like a straightforward application of object detection turned into a lesson in system design, error handling, and the importance of understanding your data.
-            The most valuable outcome wasn't the code—it was realizing how many assumptions I make when starting a new project. Real-world video is messier than benchmark datasets. Camera angles vary. Roads curve. Vehicles occlude each other. Every assumption I didn't validate upfront became a bug I had to fix later.
+            The most valuable outcome wasn't the code:it was realizing how many assumptions I make when starting a new project. Real-world video is messier than benchmark datasets. Camera angles vary. Roads curve. Vehicles occlude each other. Every assumption I didn't validate upfront became a bug I had to fix later.
             Now, when I start a new vision project, I spend more time studying the input data and less time optimizing model architecture. I prototype the data pipeline first and the ML components second. I validate geometry before tuning hyperparameters.
-            Building systems that work reliably in production isn't about using the fanciest models—it's about understanding the problem deeply enough to make the right trade-offs. This traffic counter taught me that lesson the hard way, one misplaced counting line at a time.
+            Building systems that work reliably in production isn't about using the fanciest models:it's about understanding the problem deeply enough to make the right trade-offs. This traffic counter taught me that lesson the hard way, one misplaced counting line at a time.
             </p>
           </article>
         </section>

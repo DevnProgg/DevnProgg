@@ -37,11 +37,11 @@
           <h2 id="article-title" class="visually-hidden">Article</h2>
           <article class="article">
             <article class="lg-research-post">
-            <p><em>A research-paper-style blog post based on the LaundroGraph research prototype. All numbers are taken from saved artifacts; all data are synthetic, so nothing here is a claim about real-world AML performance.</em></p>
+            <p><em>A research-paper-style blog post based on the LaundroGraph research project available at <a href="https://github.com/DevnProgg/laundrograph">source code</a>. All numbers are taken from saved artifacts; all data are synthetic, so nothing here is a claim about real-world AML performance.</em></p>
             <hr/>
             <h2>Abstract</h2>
             <p>Financial-crime detection has two persistent problems: labels are scarce, and the typologies we trained against keep changing. LaundroGraph is a controlled, synthetic transaction-graph benchmark built to study exactly those two problems. We froze a time-ordered split (signature <code>7cdbe8e10a4be50f</code>), fixed an alert budget, and compared logistic regression, random forest, XGBoost, Isolation Forest, and a two-layer GraphSAGE on the same test set under (A) shrinking training-label fractions and (B) leaving one crime typology entirely out of training and validation.</p>
-            <p>The results are not the "graph wins" story that the motivation might suggest. Under label scarcity, tree baselines remained marginally ahead on PR-AUC, with the GNN competitive only at the 5% label fraction. Under held-out typology shift, supervised tabular models clearly beat GraphSAGE on precision/recall at a 100-alert budget. Ablations showed that a generator shortcut (the <code>channel</code> field alone reaches 0.9076 ROC-AUC) explains part of the strong tabular performance, and that content features — not graph-feature blocks — cleared random-block controls in the GNN necessity test. The value of the project is therefore not a model leaderboard; it is a traceable protocol that separates scarcity from shift, quantifies its own confounds, and refuses to turn synthetic results into operational claims.</p>
+            <p>The results are not the "graph wins" story that the motivation might suggest. Under label scarcity, tree baselines remained marginally ahead on PR-AUC, with the GNN competitive only at the 5% label fraction. Under held-out typology shift, supervised tabular models clearly beat GraphSAGE on precision/recall at a 100-alert budget. Ablations showed that a generator shortcut (the <code>channel</code> field alone reaches 0.9076 ROC-AUC) explains part of the strong tabular performance, and that content features : not graph-feature blocks : cleared random-block controls in the GNN necessity test. The value of the project is therefore not a model leaderboard; it is a traceable protocol that separates scarcity from shift, quantifies its own confounds, and refuses to turn synthetic results into operational claims.</p>
             <hr/>
             <h2>1. Why build another benchmark?</h2>
             <p>A single suspicious transfer is often unremarkable. What makes layering, circular flows, mule chains, and smurfing detectable is the <em>relationship</em> among many ordinary-looking transactions. Transaction-level models cannot represent that relationship; graph models can. That is the intuition.</p>
@@ -116,9 +116,9 @@
             <li><strong>Unlabelled ≠ negative.</strong> In label-scarcity runs, unlabelled training transactions stay in the graph but are masked out of the loss. The test set never shrinks.</li>
             <li><strong>Held-out ≠ future.</strong> In typology-shift runs, the held-out typology is removed from training <em>and</em> validation <em>and</em> threshold selection. But one static generator rule set produced all typologies, and every event sits in the same 9,848-node giant component. So this is "unseen by the model," not "unseen by the data-generating process," and component-disjoint evaluation was infeasible.</li>
             </ol>
-            <p>Models: logistic regression, random forest, XGBoost, Isolation Forest on transaction attributes (R1); XGBoost and friends with graph-derived node features (R4); and GraphSAGE — two SAGEConv layers, hidden size 64, mean aggregation, BatchNorm/ReLU/dropout 0.2, an edge MLP over <code>[h_src || h_dst || edge_features]</code>, train-only <code>pos_weight</code>, early stopping (patience 15), validation-selected threshold. GAT (RQ5) was not run; it remains Tier 2 future work.</p>
+            <p>Models: logistic regression, random forest, XGBoost, Isolation Forest on transaction attributes (R1); XGBoost and friends with graph-derived node features (R4); and GraphSAGE : two SAGEConv layers, hidden size 64, mean aggregation, BatchNorm/ReLU/dropout 0.2, an edge MLP over <code>[h_src || h_dst || edge_features]</code>, train-only <code>pos_weight</code>, early stopping (patience 15), validation-selected threshold. GAT (RQ5) was not run; it remains Tier 2 future work.</p>
             <hr/>
-            <h2>3. Finding 1 — Under label scarcity, the GNN is competitive but does not win</h2>
+            <h2>3. Finding 1 : Under label scarcity, the GNN is competitive but does not win</h2>
             <p>Experiment A varies the fraction of available training labels while holding the test set fixed.</p>
             <table>
             <thead>
@@ -171,11 +171,11 @@
             <p>Two honest readings:</p>
             <ul>
             <li>Degrading labels hurts everyone, but the supervised tabular models degrade gently and still lead. At full labels, XGBoost's 0.958 mean PR-AUC exceeds GraphSAGE's 0.932.</li>
-            <li>At 5% labels the gap narrows substantially (0.917 vs 0.900) and XGBoost's variance rises sharply (±0.043). This is where a graph model becomes <em>competitive</em> on this benchmark — not where it dominates.</li>
+            <li>At 5% labels the gap narrows substantially (0.917 vs 0.900) and XGBoost's variance rises sharply (±0.043). This is where a graph model becomes <em>competitive</em> on this benchmark : not where it dominates.</li>
             </ul>
             <p>The interpretation offered in the evaluation report is deliberately cautious: no winner is asserted, because the R4 ablation and GNN grid must remain directly comparable. This is a measured ordering under one generator family, not a law about graph learning.</p>
             <hr/>
-            <h2>4. Finding 2 — Fixed alert budgets flatten the differences</h2>
+            <h2>4. Finding 2 : Fixed alert budgets flatten the differences</h2>
             <p>Investigators do not consume PR-AUC; they consume a queue of alerts. At a budget of 100 transactions on a test set with 401 positives, every supervised model achieves roughly 0.25 recall and near-1.00 precision.</p>
             <table>
             <thead>
@@ -221,7 +221,7 @@
             </table>
             <p>This is an important calibration for any graph-learning claim: at the top of the ranking, a strong tree model already fills a small alert queue almost perfectly. The interesting differences appear in the <em>middle</em> of the ranking and in error composition, not in the first 100 alerts.</p>
             <hr/>
-            <h2>5. Finding 3 — Typology shift is where the graph model clearly underperforms</h2>
+            <h2>5. Finding 3 : Typology shift is where the graph model clearly underperforms</h2>
             <p>Experiment B holds out one coordinated typology at a time. Precision/recall at K=100, restricted to held-out-typology positives:</p>
             <table>
             <thead>
@@ -272,12 +272,12 @@
             <p>GraphSAGE trails the supervised tabular baselines on every held-out typology, especially on mule and smurfing networks. The pattern is consistent with the transductive setup: the GNN learned from a full-window graph whose structure and neighbours were shared across train and test, so it had less reason to learn a transferable rule for a mechanism it never saw.</p>
             <p>The correct conclusion is narrow and useful: <strong>under this static-rule generator, this evaluator, and this budget, learned neighbourhood aggregation did not generalize to held-out typologies as well as tree ensembles on transaction attributes.</strong> It is not evidence that GNNs cannot generalize; it is evidence that our benchmark did not demonstrate it.</p>
             <hr/>
-            <h2>6. Finding 4 — The generator left fingerprints, and we measured them</h2>
+            <h2>6. Finding 4 : The generator left fingerprints, and we measured them</h2>
             <p>A benchmark is only as honest as its confounds. Here, the <code>channel</code> field alone achieves <strong>0.9076 ROC-AUC</strong> on training data (<code>experiments/baselines/ablation_channel.json</code>). Removing channel from the no-graph XGBoost features drops PR-AUC from <strong>0.9371 to 0.8892</strong>.</p>
-            <p>That matters because injected crime was assigned distinctive channel/type combinations. The tabular baselines are exploiting a signal that is real <em>in this generator</em> but may not exist in a bank. Any reported graph advantage — or lack of one — has to be read against this shortcut. It is also the most likely reason XGBoost's alert-queue performance is so strong.</p>
-            <p>False positives follow the same fingerprint. For the full-label XGBoost R1 run (TP=343, FP=44, FN=58, TN=18,907; 2.32 FP per 1,000 legitimate transactions), false positives concentrate in <code>wire</code>/<code>transfer</code> (20.3% within-cell FP rate) and <code>internal</code>/<code>transfer</code> (22.9%) — legitimate transactions that happen to share the injected envelope.</p>
+            <p>That matters because injected crime was assigned distinctive channel/type combinations. The tabular baselines are exploiting a signal that is real <em>in this generator</em> but may not exist in a bank. Any reported graph advantage : or lack of one : has to be read against this shortcut. It is also the most likely reason XGBoost's alert-queue performance is so strong.</p>
+            <p>False positives follow the same fingerprint. For the full-label XGBoost R1 run (TP=343, FP=44, FN=58, TN=18,907; 2.32 FP per 1,000 legitimate transactions), false positives concentrate in <code>wire</code>/<code>transfer</code> (20.3% within-cell FP rate) and <code>internal</code>/<code>transfer</code> (22.9%) : legitimate transactions that happen to share the injected envelope.</p>
             <hr/>
-            <h2>7. Finding 5 — Errors are concentrated, not uniform</h2><p><img alt="False-negative rates by crime typology and label fraction on the synthetic LaundroGraph dataset" class="img-responsive" src="../assets/img/laundrograph-fn-typology.png"/></p>
+            <h2>7. Finding 5 : Errors are concentrated, not uniform</h2><p><img alt="False-negative rates by crime typology and label fraction on the synthetic LaundroGraph dataset" class="img-responsive" src="../assets/img/laundrograph-fn-typology.png"/></p>
             <p>Missed positives are strongly typology-dependent (XGBoost R1, full labels, pooled seeds):</p>
             <table>
             <thead>
@@ -320,28 +320,28 @@
             </tr>
             </tbody>
             </table>
-            <p>At 5% labels, smurfing FN rises to 0.418 and mule to 0.326. Under holdout, the held-out typology is not necessarily the worst case — other complex typologies remain hard too. This is a measured error distribution in a synthetic ecosystem, not a claim that smurfing is intrinsically harder in the real world.</p>
+            <p>At 5% labels, smurfing FN rises to 0.418 and mule to 0.326. Under holdout, the held-out typology is not necessarily the worst case : other complex typologies remain hard too. This is a measured error distribution in a synthetic ecosystem, not a claim that smurfing is intrinsically harder in the real world.</p>
             <hr/>
-            <h2>8. Finding 6 — Explanations are useful, unstable in places, and do not certify the graph</h2>
+            <h2>8. Finding 6 : Explanations are useful, unstable in places, and do not certify the graph</h2>
             <p>Three explainability results are worth carrying into future work:</p>
             <ol>
             <li><strong>Ranking stability is model-dependent.</strong> Across seeds, Spearman correlation of feature rankings is 0.729 for XGBoost tree importance at full labels (0.884 at 5%), versus 1.000 for logistic-regression coefficients at full labels. XGBoost's individual feature ranks are provisional; its aggregate error curve is not.</li>
             <li><strong>Held-out profiles look similar in feature space.</strong> SHAP rank agreement between held-out and known positives ranges 0.915–0.988 across the four typologies. That shows the same input families drive the model's dependence; it does <em>not</em> prove the same behavioural mechanism.</li>
-            <li><strong>Graph feature blocks did not clear random controls.</strong> In the GraphSAGE edge-feature permutation test (Experiment A, full labels, seed 1), excess drop over a same-width random block was +0.083 for amount, +0.019 for channel, +0.019 for tx_type, <strong>−0.027 for graph_degree_flow, +0.001 for graph_network</strong>, and −0.077 for merchant. Content blocks matter; the tested graph blocks provide no positive evidence of necessity beyond an arbitrary block of the same size. Edge-feature permutation also does not prove that message passing itself helps — that needs retrained structure ablations.</li>
+            <li><strong>Graph feature blocks did not clear random controls.</strong> In the GraphSAGE edge-feature permutation test (Experiment A, full labels, seed 1), excess drop over a same-width random block was +0.083 for amount, +0.019 for channel, +0.019 for tx_type, <strong>−0.027 for graph_degree_flow, +0.001 for graph_network</strong>, and −0.077 for merchant. Content blocks matter; the tested graph blocks provide no positive evidence of necessity beyond an arbitrary block of the same size. Edge-feature permutation also does not prove that message passing itself helps : that needs retrained structure ablations.</li>
             </ol>
             <p>The research audit's verdict on the claim "graph message passing helps" was explicit: <strong>not supported by reported ablations.</strong> We kept it that way.</p>
             <hr/>
             <h2>9. What the research questions actually got</h2>
             <ul>
-            <li><strong>RQ1 / H1 — graph models beat transaction baselines on coordinated typologies:</strong> not supported in this grid. Tree baselines lead on overall PR-AUC and on held-out typologies; GraphSAGE is competitive only at the lowest label fraction.</li>
-            <li><strong>RQ2 / H2 — topology adds value beyond attributes:</strong> not established. The channel shortcut is strong, and the R4 ladder must be read together with it; graph blocks did not exceed random controls in the GNN probe.</li>
-            <li><strong>RQ3 / H3 — gains concentrate on multi-account schemes:</strong> no positive interaction demonstrated. Errors do concentrate on complex typologies (smurfing, mule), but that is an error-distribution result, not a graph-gain result.</li>
-            <li><strong>RQ4 / H4 — typologies have distinct graph signatures:</strong> retained as an analysis hypothesis; the honesty constraints in the audit keep any such description descriptive rather than predictive.</li>
+            <li><strong>RQ1 / H1 : graph models beat transaction baselines on coordinated typologies:</strong> not supported in this grid. Tree baselines lead on overall PR-AUC and on held-out typologies; GraphSAGE is competitive only at the lowest label fraction.</li>
+            <li><strong>RQ2 / H2 : topology adds value beyond attributes:</strong> not established. The channel shortcut is strong, and the R4 ladder must be read together with it; graph blocks did not exceed random controls in the GNN probe.</li>
+            <li><strong>RQ3 / H3 : gains concentrate on multi-account schemes:</strong> no positive interaction demonstrated. Errors do concentrate on complex typologies (smurfing, mule), but that is an error-distribution result, not a graph-gain result.</li>
+            <li><strong>RQ4 / H4 : typologies have distinct graph signatures:</strong> retained as an analysis hypothesis; the honesty constraints in the audit keep any such description descriptive rather than predictive.</li>
             <li><strong>RQ5 / GAT:</strong> not evaluated (Tier 2).</li>
             <li><strong>RQ6 / evidence-grounded investigator assistant:</strong> demonstrated as a prototype with deterministic summaries, grounding validation, and audit logs; it is not part of the detection-performance claim.</li>
             </ul>
             <hr/>
-            <h2>10. Threats to validity — stated prominently, not buried</h2>
+            <h2>10. Threats to validity : stated prominently, not buried</h2>
             <ul>
             <li><strong>Synthetic only.</strong> Amounts are LSL-denominated design units, not calibrated to any real banking population.</li>
             <li><strong>Static generator rules.</strong> "Held-out" means unseen by the model, not unseen by the generating process.</li>
@@ -372,7 +372,7 @@
             <li>Audits: <code>reports/final_research_audit.md</code>, <code>reports/research_audit.md</code>, <code>reports/reproducibility_audit.md</code></li>
             <li>Data: <code>data/raw/lg_c12e9cbd5b64/</code>, <code>docs/data_generation.md</code>, <code>docs/data_specification.md</code></li>
             </ul>
-            <p><em>Score reproduction across refits was near-exact (max absolute difference 5.55e-16), artifact audits reported zero label mismatches, missing test transactions, or out-of-range scores, and the test suite passed (116 tests). Those are reproducibility facts — they do not change the scientific caveats above.</em></p>
+            <p><em>Score reproduction across refits was near-exact (max absolute difference 5.55e-16), artifact audits reported zero label mismatches, missing test transactions, or out-of-range scores, and the test suite passed (116 tests). Those are reproducibility facts : they do not change the scientific caveats above.</em></p>
             </article>
           </article>
         </section>
