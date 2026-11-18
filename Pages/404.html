@@ -1,37 +1,55 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-<title>Blog</title>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta http-equiv="X-UA-Compatible" content="IE=edge">
-<meta name="description" content="HTML5 website template">
-<meta name="keywords" content="global, template, html, sass, jquery">
-<meta name="author" content="Bucky Maler">
-<link rel="stylesheet" href="../assets/css/main.css">
-<link rel="stylesheet" href="../custom.css">
-</head>
-<body>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="The page you requested could not be found.">
+    <title>Page not found | Lauren Qokolo</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="../site.css" rel="stylesheet">
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <div class="shell">
+      <header class="masthead">
+        <a class="identity" href="../index.html"><span>Lauren</span><span>Qokolo</span><small>Software engineer</small></a>
+        <button class="nav-toggle" type="button" aria-controls="site-nav" aria-expanded="false">Menu</button>
+        <nav class="site-nav" id="site-nav" aria-label="Main navigation">
+          <a href="../index.html">Home</a>
+          <a href="./projects.html">Projects</a>
+          <a href="./blog.html">Writing</a>
+          <a href="./work.html">Experience</a>
+          <a href="./about.html">About</a>
+          <a href="./contact.html">Contact</a>
+        </nav>
+        <a class="rail-foot" href="https://www.linkedin.com/in/lauren-qokolo-666204333" target="_blank" rel="noopener">LinkedIn profile</a>
+      </header>
 
-<!-- notification for small viewports and landscape oriented smartphones -->
-<div class="device-notification">
-    <a class="device-notification--logo" href="#0">
-      <p>Hey</p>
-    </a>
-    <p class="device-notification--message">I have so much to offer that we must request you orient your device to portrait or find a larger screen. You won't be disappointed.</p>
-  </div>
-  <header class="header">
-    <a class="header--logo" href="../index.html">
-      <p>Back</p>
-    </a>
-  </header>
+      <main id="main">
+        <section class="page-head" aria-labelledby="page-title">
+          <p class="kicker">404</p>
+          <h1 id="page-title">No record at this address.</h1>
+          <p class="lede">The page you asked for is missing or has moved. The index below will get you back to the work.</p>
+        </section>
 
-  <div style="margin: 20% 40% 20% 40%;">
-    <h1> Sorry, Our server is down...</h1>
-  </div>
+        <section class="section" aria-labelledby="routes-title">
+          <div class="section-head"><span class="num">01</span><h2 id="routes-title">Known routes</h2></div>
+          <ul class="ledger">
+            <li><span class="ref">01</span><div><h3><a href="../index.html">Home</a></h3><p>Selected work and writing.</p></div></li>
+            <li><span class="ref">02</span><div><h3><a href="./projects.html">Projects</a></h3><p>Three systems built around real constraints.</p></div></li>
+            <li><span class="ref">03</span><div><h3><a href="./blog.html">Writing</a></h3><p>Long-form build notes and research.</p></div></li>
+            <li><span class="ref">04</span><div><h3><a href="./contact.html">Contact</a></h3><p>Roles, collaborations and freelance work.</p></div></li>
+          </ul>
+        </section>
 
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
-<script>window.jQuery || document.write('<script src="../assets/js/vendor/jquery-2.2.4.min.js"><\/script>')</script>
-<script src="../assets/js/functions-min.js"></script>
-</body>
+        <footer class="site-footer">
+          <p>&copy; 2026 Lauren Qokolo</p>
+          <a href="../index.html">Return home</a>
+        </footer>
+      </main>
+    </div>
+    <script src="../site.js"></script>
+  </body>
 </html>

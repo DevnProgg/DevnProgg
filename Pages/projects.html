@@ -1,87 +1,81 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-<title>Projects</title>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta http-equiv="X-UA-Compatible" content="IE=edge">
-<meta name="description" content="HTML5 website template">
-<meta name="keywords" content="global, template, html, sass, jquery">
-<meta name="author" content="Lauren Qokolo">
-<link href="../main.3f6952e4.css" rel="stylesheet">
-<link rel="stylesheet" href="../assets/css/projects.css">
-</head>
-<body>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Selected projects by Lauren Qokolo: computer vision, regulatory calculation engines and real-time financial crime detection.">
+    <title>Projects | Lauren Qokolo</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="../site.css" rel="stylesheet">
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <div class="shell">
+      <header class="masthead">
+        <a class="identity" href="../index.html"><span>Lauren</span><span>Qokolo</span><small>Software engineer</small></a>
+        <button class="nav-toggle" type="button" aria-controls="site-nav" aria-expanded="false">Menu</button>
+        <nav class="site-nav" id="site-nav" aria-label="Main navigation">
+          <a href="../index.html">Home</a>
+          <a href="./projects.html" aria-current="page">Projects</a>
+          <a href="./blog.html">Writing</a>
+          <a href="./work.html">Experience</a>
+          <a href="./about.html">About</a>
+          <a href="./contact.html">Contact</a>
+        </nav>
+        <a class="rail-foot" href="https://www.linkedin.com/in/lauren-qokolo-666204333" target="_blank" rel="noopener">LinkedIn profile</a>
+      </header>
 
-  <header>
-    <nav class="navbar  navbar-fixed-top navbar-inverse">
-      <div class="container">
-          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar-collapse" aria-expanded="false">
-            <span class="sr-only">Toggle navigation</span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-          </button>
+      <main id="main">
+        <section class="page-head" aria-labelledby="page-title">
+          <p class="kicker">Projects</p>
+          <h1 id="page-title">Work built to be used, not just demonstrated.</h1>
+          <p class="lede">Each project starts with a practical constraint: local hardware, regulated reporting, or transaction volumes that cannot wait for a batch job.</p>
+        </section>
 
-        <div class="collapse navbar-collapse" id="navbar-collapse">
-          <ul class="nav navbar-nav ">
-            <li><a href="../index.html" title="">01 : Home</a></li>
-            <li><a href="./projects.html" title="">02 : Projects</a></li>
-            <li><a href="./about.html" title="">03 : About me</a></li>
-            <li><a href="./contact.html" title="">04 : Contact</a></li>
-            <li><a href="./blog.html" title="">05 : Blogs</a></li>
-          </ul>
+        <section class="section" aria-labelledby="selected-title">
+          <div class="section-head"><span class="num">01</span><h2 id="selected-title">Selected projects</h2></div>
+          <div class="project-list">
+            <a class="project" href="../Blogs/blog-post-1.html">
+              <div>
+                <h3>Computer vision for automated traffic analysis</h3>
+                <p>A local-first pipeline that segments the road, finds its orientation, then detects and tracks vehicles crossing a line. It produces counts by class, flow rates and temporal patterns without cloud dependencies.</p>
+                <p class="meta">Python · YOLO · Segformer · Analytics</p>
+              </div>
+              <img src="../assets/images/blog-post-1.png" alt="Traffic analysis pipeline">
+            </a>
+            <a class="project" href="../Blogs/blog-post-3.html">
+              <div>
+                <h3>Basel III regulatory calculation engine</h3>
+                <p>A Spring Boot engine for Pillar 1 and Pillar 2 calculations, built around governance, auditability and reproducibility rather than a single correct number.</p>
+                <p class="meta">Java · Spring Boot · PostgreSQL</p>
+              </div>
+              <img src="../assets/img/blog3.jpg" alt="Basel III engine">
+            </a>
+            <a class="project" href="../Blogs/blog-post-5.html">
+              <div>
+                <h3>Real-time anti-money laundering detection</h3>
+                <p>A transaction monitoring system with rules, alerts and regulatory reporting, built to explore how serious financial systems are designed and operated.</p>
+                <p class="meta">Go · Redis · RabbitMQ</p>
+              </div>
+              <img src="../assets/img/blog5.png" alt="AML detection system">
+            </a>
+          </div>
+        </section>
 
+        <section class="section" aria-labelledby="writing-title">
+          <div class="section-head"><span class="num">02</span><h2 id="writing-title">Research and writing</h2></div>
+          <p>The longer write-ups explain the decisions, trade-offs and failures behind these systems. The most recent one covers graph learning under label scarcity in financial crime detection.</p>
+          <a class="btn" href="./blog.html">Read the writing</a>
+        </section>
 
-        </div> 
-      </div>
-    </nav>
-  </header>
-
-  <div class="projects-container">
-    <div class="project-card">
-      <a style="text-decoration: none;" href="../Blogs/blog-post-1.html">
-      <img src="../assets/images/blog-post-1.png" alt="Project 2">
-      <div class="project-card-content">
-        <h3 class="project-card-title">Computer Vision System for Automated Traffic Analysis</h3>
-        <p class="project-card-description" style="color: black;">
-          I needed to solve a deceptively simple problem: count vehicles crossing a line in a video...
-        </p>
-        </a>
-      </div>
+        <footer class="site-footer">
+          <p>&copy; 2026 Lauren Qokolo</p>
+          <a href="./contact.html">Get in touch</a>
+        </footer>
+      </main>
     </div>
-    <div class="project-card">
-      <a style="text-decoration: none;" href="../Blogs/blog-post-3.html">
-      <img src="../assets/img/blog3.jpg" alt="Project 3">
-      <div class="project-card-content">
-        <h3 class="project-card-title">Designing a Basel III–Aligned Regulatory Calculation Engine (Spring Boot)</h3>
-        <p class="project-card-description" style="color: black;">
-          I recently built a regulatory calculation engine designed to align with Basel III Pillar 1 and Pillar 2 expectations,
-    focusing not just on correct capital calculations, but on governance, auditability, and reproducibility...
-        </p>
-        </a>
-      </div>
-    </div>
-    <div class="project-card">
-      <a style="text-decoration: none;" href="../Blogs/blog-post-5.html">
-      <img src="../assets/img/blog5.png" alt="Project 5">
-      <div class="project-card-content">
-        <h3 class="project-card-title">Building a Real-Time Anti-Money Laundering Detection System in Go</h3>
-        <p class="project-card-description" style="color: black;">
-          I built a real-time AML transaction monitoring system from scratch, not because I work at a bank,
-    but because I’m passionate about FinTech and wanted to understand how serious financial systems are built.
-    What started as a small anomaly-detection experiment grew into a complete system with rules, alerts,
-    and regulatory reporting....
-        </p>
-        </a>
-      </div>
-    </div>
-    
-    </div>
-  </div>
-
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
-<script>window.jQuery || document.write('<script src="../assets/js/vendor/jquery-2.2.4.min.js"><\/script>')</script>
-<script src="../assets/js/functions-min.js"></script>
-</body>
+    <script src="../site.js"></script>
+  </body>
 </html>
