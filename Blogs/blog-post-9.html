@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Writing by Lauren Qokolo.">
+    <title>The hard part isn't making a payment request</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="../site.css" rel="stylesheet">
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <div class="shell">
+      <header class="masthead">
+        <a class="identity" href="../index.html"><span>Lauren</span><span>Qokolo</span><small>Software engineer</small></a>
+        <button class="nav-toggle" type="button" aria-controls="site-nav" aria-expanded="false">Menu</button>
+        <nav class="site-nav" id="site-nav" aria-label="Main navigation">
+          <a href="../index.html">Home</a>
+          <a href="../Pages/projects.html">Projects</a>
+          <a href="../Pages/blog.html" aria-current="page">Writing</a>
+          <a href="../Pages/work.html">Experience</a>
+          <a href="../Pages/about.html">About</a>
+          <a href="../Pages/contact.html">Contact</a>
+        </nav>
+        <a class="rail-foot" href="https://www.linkedin.com/in/lauren-qokolo-666204333" target="_blank" rel="noopener">LinkedIn profile</a>
+      </header>
+
+      <main id="main">
+        <section class="page-head" aria-labelledby="page-title">
+          <p class="kicker"><a href="../Pages/blog.html">Writing</a></p>
+          <h1 id="page-title">The hard part isn't making a payment request</h1>
+        </section>
+
+        <section class="section" aria-labelledby="article-title">
+          <h2 id="article-title" class="visually-hidden">Article</h2>
+          <article class="article">
+            <p><em>Four commits, eight transaction types, and the quiet infrastructure that makes an M-Pesa SDK worth using. Source code: <a href="https://github.com/DevnProgg/mpesa-sdk" target="_blank" rel="noopener">github.com/DevnProgg/mpesa-sdk</a>.</em></p>
+            <hr/>
+
+            <h2>Why I built it</h2>
+            <p>I started building this because integrating with M-Pesa can mean dealing with sessions, encryption, API contexts, headers, retries, errors, and a lot of documentation. Even the existing Python library still left me writing much of the payment logic myself.</p>
+            <p>So I decided to build the abstraction I wanted. This is the experience I was after: focus on the transaction, not the API internals.</p>
+            <pre><code>import asyncio
+import MpesaSDK as mp
+
+provider = mp.config({
+    "market": mp.markets.LESOTHO,
+    "api-key": "...",
+    "public-key": "..."
+})
+
+async def main():
+    response = await provider.initialize_transaction(
+        type=mp.transactions.C2B_SINGLE_STAGE,
+        payload={
+            "amount": "10.00",
+            "customer_msisdn": "26658123456",
+            "service_provider_code": "000000",
+            "reference": "T1234C",
+            "description": "Shoes"
+        }
+    )
+    store(response.audit.log)
+
+asyncio.run(main())</code></pre>
+            <p>Borrowing from Omarchy's Omakase philosophy: I make the tough decisions so the developer doesn't have to. The SDK handles retries, async processing, Celery and Redis workers, audit logging, idempotency, transaction tracing, session management, and reconciliation.</p>
+            <p>The hard part isn't making a payment request. It's making payment processing reliable.</p>
+
+            <h2>Four commits in two weeks</h2>
+            <p>The first commit was a C2B-only SDK. Everything else came after it, one feature and one pull request at a time.</p>
+            <table>
+              <thead>
+              <tr><th>Commit</th><th>Version</th><th>What landed</th></tr>
+              </thead>
+              <tbody>
+              <tr><td>First</td><td>0.1.0</td><td>C2B single stage, plus the reliability skeleton underneath it</td></tr>
+              <tr><td>Second</td><td>0.2.0</td><td>B2C payouts: the business pays the customer</td></tr>
+              <tr><td>Third</td><td>0.3.0</td><td>B2B transfers between two shortcodes</td></tr>
+              <tr><td>Fourth</td><td>0.4.0</td><td>Reversals: full and partial refunds, tied to the original transaction</td></tr>
+              </tbody>
+            </table>
+            <p>Each feature follows the same shape: a transaction type, a validated payload, an operation registration, a callback path where the API supports one, and tests that exercise the real wire format. There are now eight combinations: C2B, B2C, B2B and reversal, each with a synchronous and an asynchronous mode.</p>
+            <p>Here's to making payment processing easy and care free.</p>
+
+            <h2>Refunds are where payment code gets scary</h2>
+            <p>The fourth commit was the one I was most careful with. A payment can fail in a dozen boring ways. A refund can fail in all of those ways and also take money back twice.</p>
+            <p>Reversals now join C2B, B2C and B2B in the same pipeline. You undo a payment in full or in part with one call. Leave the amount out and the SDK omits the amount field entirely, which is what M-Pesa expects for a full reversal. You identify the original transaction by its M-Pesa transaction id, not by your own idempotency key, and the audit trail records the link as <code>related_transaction_id</code> so every refund stays traceable back to the payment it undoes.</p>
+            <p>The important rule: if a reversal request times out, it is never blindly retried into a second reversal. It is flagged for reconciliation instead. The same rule applies to payouts, where a blind retry is a second transfer to a customer.</p>
+
+            <h2>What happens when the answer is "maybe"</h2>
+            <p>A payment API does not only say yes or no. Sometimes it says nothing, and sometimes the network eats the answer. The SDK classifies responses before it decides whether to try again:</p>
+            <ul>
+              <li><code>INS-0</code> is success. <code>INS-1</code> and <code>INS-9</code>, timeouts, 5xx responses and ambiguous errors are retried, but marked ambiguous.</li>
+              <li>A 429 or a gateway 401/403 without a response body is retried with a session refresh where appropriate. Session-limit codes invalidate the cached session rather than burning through attempts.</li>
+              <li><code>INS-10</code> means a duplicate. It is never retried. If it arrives after an ambiguous attempt, the result is <code>UNKNOWN</code>, not <code>FAILED</code>, because the original may well have gone through.</li>
+              <li>Unknown result codes are terminal. Guessing is how you turn a confusing response into a double charge.</li>
+            </ul>
+            <p>Retries use exponential back-off with jitter: roughly 5, 10 and 20 seconds by default, capped at 300 seconds. When retries run out on an ambiguous outcome, the response carries <code>UNKNOWN</code> and <code>err.needs_reconciliation = True</code>. That is an instruction to query the transaction status with the same transaction id before paying again, not an invitation to resubmit.</p>
+
+            <h2>One key, no double charges</h2>
+            <p>Every transaction gets an idempotency key, sent as <code>input_ThirdPartyConversationID</code>. It is also the transaction id in the audit log, and it stays exactly the same across every retry attempt. M-Pesa uses it to detect duplicates; the SDK uses it to make a retried request the same request rather than a new one.</p>
+            <p>In queue mode the Celery task id is the transaction id too, and the state travels with each retry. Workers use late acknowledgements, so a worker that dies mid-flight does not silently drop work. Credentials live in the application module and never go into a Redis message. Payload data such as amounts and MSISDNs does travel through the broker, so Redis still needs to be secured properly.</p>
+
+            <h2>Audit first, questions later</h2>
+            <p>Every call produces a JSON-safe <code>audit.log</code>: transaction id and type, amount and currency, who was debited and credited, the exact request body, the last API response, a UTC timestamp, and one record per attempt with its HTTP status, result code and disposition. Callbacks, completion time and the related transaction id are recorded as well. No API key or session key ever goes into it.</p>
+            <p>The README says to store the log always, and I mean it. Audit entries can contain phone numbers, so treat that table as personal data. But when a customer asks where their money went, that log is the difference between an answer and a guess.</p>
+
+            <h2>Two ways to run it</h2>
+            <p>The retry engine has one atomic unit of work: a single attempt. In inline mode, an asyncio loop sleeps between attempts. In queue mode, each attempt is a Celery task that schedules the next one. Same decisions, same idempotency key, same audit trail; you just pick whether a backing-off transaction occupies your process or not.</p>
+            <p>Queue mode also gives you <code>wait_for()</code> and <code>get_result()</code> when you need a synchronous answer from an asynchronous system, and an <code>audit-handler</code> callback that runs once per final outcome so you can persist the log from the worker.</p>
+            <p>For callbacks, <code>parse_callback()</code> checks the returned ids and result code, <code>apply_to()</code> closes out the stored audit entry, and <code>ack()</code> builds the response body M-Pesa expects. The API defines no callback signature, so verifying the sender is on you: use an IP allow-list.</p>
+
+            <h2>Testing the scary parts</h2>
+            <p>The test fake is not a string-comparison stub. It decrypts real RSA bearer tokens, so the tests exercise URL construction, session headers, encryption, retry sequencing and audit output end to end. About 247 collected tests run without network or Redis, with a real Celery plus Redis integration test available behind an environment variable.</p>
+            <p>Because the fake speaks the actual protocol, mistakes like using the wrong description key for B2C or treating an <code>INS-6</code> on HTTP 401 as a session failure show up as failing tests instead of production incidents.</p>
+
+            <h2>Still on the list</h2>
+            <p>There is more to do. The Lesotho MSISDN rule has an eleven-digit exception that still needs sandbox verification. Reconciliation is a state the SDK reports, not a complete back-office job; the querying side has to be wired into whatever runs your business. Callback verification remains a deployment responsibility rather than something the SDK can enforce.</p>
+            <p>I'm building with Lesotho first, and designing it to grow from there: Ghana, Tanzania, DR Congo and Mozambique already have market definitions with their own contexts, currencies and number rules.</p>
+            <p>The point of all of this is small. A developer should be able to write one call, store one audit log, and trust that the SDK has made the unglamorous decisions correctly. Here's to making payment processing easy and care free.</p>
+            <hr/>
+            <p><a href="https://github.com/DevnProgg/mpesa-sdk" target="_blank" rel="noopener">Source code on GitHub</a></p>
+          </article>
+        </section>
+
+        <footer class="site-footer">
+          <p>&copy; 2026 Lauren Qokolo</p>
+          <a href="../Pages/blog.html">All posts</a>
+        </footer>
+      </main>
+    </div>
+    <script src="../site.js"></script>
+  </body>
+</html>
