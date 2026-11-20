@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Writing by Lauren Qokolo.">
+    <title>The database that disappeared on every deploy</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="../site.css" rel="stylesheet">
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <div class="shell">
+      <header class="masthead">
+        <a class="identity" href="../index.html"><span>Lauren</span><span>Qokolo</span><small>Software engineer</small></a>
+        <button class="nav-toggle" type="button" aria-controls="site-nav" aria-expanded="false">Menu</button>
+        <nav class="site-nav" id="site-nav" aria-label="Main navigation">
+          <a href="../index.html">Home</a>
+          <a href="../Pages/projects.html">Projects</a>
+          <a href="../Pages/blog.html" aria-current="page">Writing</a>
+          <a href="../Pages/work.html">Experience</a>
+          <a href="../Pages/about.html">About</a>
+          <a href="../Pages/contact.html">Contact</a>
+        </nav>
+        <a class="rail-foot" href="https://www.linkedin.com/in/lauren-qokolo-666204333" target="_blank" rel="noopener">LinkedIn profile</a>
+      </header>
+
+      <main id="main">
+        <section class="page-head" aria-labelledby="page-title">
+          <p class="kicker"><a href="../Pages/blog.html">Writing</a></p>
+          <h1 id="page-title">The database that disappeared on every deploy</h1>
+        </section>
+
+        <section class="section" aria-labelledby="article-title">
+          <h2 id="article-title" class="visually-hidden">Article</h2>
+          <article class="article">
+            <p><em>An incident report for Khoebo. I assumed my app server was a persistent VPS, but on Render it was a disposable container, and a handful of early users paid for that assumption. This is what happened, what I changed, and what I am sorry for. Live app: <a href="https://khoebo.onrender.com" target="_blank" rel="noopener">khoebo.onrender.com</a>. Source: <a href="https://github.com/DevnProgg/khoebo" target="_blank" rel="noopener">github.com/DevnProgg/khoebo</a>.</em></p>
+            <hr/>
+
+            <h2>The root cause: I thought I had a server</h2>
+            <p>Before Render, I hosted on a VPS. On a VPS, if your app writes <code>khoebo.db</code> into its own directory, that file is still there tomorrow. It survives a process restart, a reboot and a redeploy, because the machine and its disk are yours. That model was so familiar that I carried it across without questioning it.</p>
+            <p>Render does not give you that machine. A web service runs in a container with an ephemeral filesystem. When the process restarts, whether because of an auto deploy, a restart or a crash, the container and everything inside it goes away. I did not know that at the time. I genuinely believed I was running a small persistent server in the cloud, and so a local SQLite file felt like a perfectly reasonable choice "for now".</p>
+            <p>It was a trap created by the gap between the platform I came from and the platform I had moved to. The setup looked identical from the outside: a URL, a deployed app, a database file that existed. The difference was underneath it, and it was the one thing that mattered.</p>
+
+            <h2>What happened</h2>
+            <p>Khoebo's settings had a default database URL: <code>sqlite:///./khoebo.db</code>. That is a perfectly reasonable default for local development and for the test suite. It was also the URL the deployed service was using, because the environment variable that should have pointed at PostgreSQL was never updated. Had I understood the hosting model, that misconfiguration would have been obvious instead of invisible.</p>
+            <p>The SQLite file lived inside the app directory, so every new container got a fresh, empty database. The service then came back looking completely healthy. There was no error page and no failed health check. The process was up, the endpoints answered, and the schema existed. The rows from yesterday simply did not.</p>
+
+            <h2>Why I did not catch it sooner</h2>
+            <p>The biggest reason was the wrong mental model. I was not looking for this failure because, in my head, local files on a server persist. Everything else followed from that.</p>
+            <p>The app was also very new and adoption was not exactly booming. At the time there were about three users. That is not an excuse, but it is the reason the symptom went unnoticed for a while: nobody was leaning on the data hard enough to notice it had gone.</p>
+            <p>The tests would not have caught it either. They run against in-memory SQLite, which is created and discarded for each test run by design. Persistence across a process restart is not a property that kind of test can check.</p>
+            <p>There were production guardrails, but they checked the wrong things. The startup validation rejected a weak secret key and refused automatic table creation in production. Nothing checked the database URL itself, and nothing checked what the hosting platform guaranteed about disk. A local file path could pass every check and still be the production database. I was watching whether the app was up, not whether the data was still there.</p>
+
+            <h2>The impact</h2>
+            <p>A small number of accounts lost their products, sales and records. I could not recover that data. Once the container is gone, a SQLite file inside it is gone too.</p>
+            <p>The blast radius was small because the app was small. That does not make it harmless. A few people had trusted a brand new tool with information about their business, and I let them down. To those users, my sincere apologies. You did nothing wrong, and I am sorry I was not careful enough with your data.</p>
+
+            <h2>The fix: separate the data from the server</h2>
+            <p>The short-term fix was to make sure the database no longer shared a lifecycle with the application server. I moved Khoebo to PostgreSQL running off to the side, so an application restart, a crash or a bad deploy cannot touch the data. App servers are disposable now. The database is not.</p>
+            <p>For this small app I did not want to operate a database myself, handle its security, or become the person who gets paged at 2am about replication. That is a legitimate reason to use a managed service, so I moved the database to <a href="https://supabase.com" target="_blank" rel="noopener">Supabase</a>. It gave Khoebo a PostgreSQL database with backups and access control handled by people whose job that is.</p>
+            <p>The application code barely changed. The settings already normalise <code>postgresql://</code> to <code>postgresql+psycopg://</code> and add <code>sslmode=require</code> for Supabase hosts, so the real work was configuration. There was one more lesson in that: my first connection attempt used Supabase's direct connection string and failed with <em>Network is unreachable</em>, because that endpoint is IPv6-only and Render is IPv4-only. Switching to the session pooler connection string, which is IPv4 on every plan, resolved it.</p>
+            <p>The incident was not closed by recovering the data. It was closed by removing the failure mode.</p>
+
+            <h2>What changed afterwards</h2>
+            <p>Backups are now a first-class requirement in this project, not a deployment detail I will get round to. The managed provider handles scheduled backups, and my responsibility is to know the retention window and actually test a restore. A backup you have never restored is a hope, not a backup.</p>
+            <p>I also treat the two questions separately: "is the app up?" and "is the data still there?". A green health check only answers the first one. Before any deploy I now confirm the database URL points at the managed instance, and the plan is to make that check automatic so that a missing or local URL fails the deploy instead of quietly succeeding.</p>
+
+            <h2>The lesson</h2>
+            <p>The mistake was not really about SQLite. It was about carrying assumptions from one hosting model into another. A VPS gives you a machine and a disk; a container platform gives you a process and a fresh filesystem. If you do not know which one you are running, you cannot reason about where your data lives.</p>
+            <p>Ephemeral compute plus a local database file is not a database; it is a scratchpad. A default that is harmless in development becomes dangerous in production when the deployment model changes underneath it. And a small user count changes the size of an incident, not its nature.</p>
+            <p>I am grateful that the people affected were patient with a very early product. The current iteration of Khoebo is built around making sure the data outlives the server, and that it can be brought back when something goes wrong. That is the promise I should have made from the start.</p>
+            <hr/>
+            <p><a href="https://khoebo.onrender.com" target="_blank" rel="noopener">Try the live app</a> · <a href="https://github.com/DevnProgg/khoebo" target="_blank" rel="noopener">Read the source on GitHub</a></p>
+          </article>
+        </section>
+
+        <footer class="site-footer">
+          <p>&copy; 2026 Lauren Qokolo</p>
+          <a href="../Pages/blog.html">All posts</a>
+        </footer>
+      </main>
+    </div>
+    <script src="../site.js"></script>
+  </body>
+</html>
