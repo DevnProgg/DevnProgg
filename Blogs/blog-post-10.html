@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Writing by Lauren Qokolo.">
+    <title>Khoebo: the sale is only the beginning</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="../site.css" rel="stylesheet">
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <div class="shell">
+      <header class="masthead">
+        <a class="identity" href="../index.html"><span>Lauren</span><span>Qokolo</span><small>Software engineer</small></a>
+        <button class="nav-toggle" type="button" aria-controls="site-nav" aria-expanded="false">Menu</button>
+        <nav class="site-nav" id="site-nav" aria-label="Main navigation">
+          <a href="../index.html">Home</a>
+          <a href="../Pages/projects.html">Projects</a>
+          <a href="../Pages/blog.html" aria-current="page">Writing</a>
+          <a href="../Pages/work.html">Experience</a>
+          <a href="../Pages/about.html">About</a>
+          <a href="../Pages/contact.html">Contact</a>
+        </nav>
+        <a class="rail-foot" href="https://www.linkedin.com/in/lauren-qokolo-666204333" target="_blank" rel="noopener">LinkedIn profile</a>
+      </header>
+
+      <main id="main">
+        <section class="page-head" aria-labelledby="page-title">
+          <p class="kicker"><a href="../Pages/blog.html">Writing</a></p>
+          <h1 id="page-title">Khoebo: the sale is only the beginning</h1>
+        </section>
+
+        <section class="section" aria-labelledby="article-title">
+          <h2 id="article-title" class="visually-hidden">Article</h2>
+          <article class="article">
+            <p><em>A sale is a short interaction with a long tail. This is the story behind Khoebo, a mobile-first platform that tries to make that whole chain agree on what happened. Live app: <a href="https://khoebo.onrender.com" target="_blank" rel="noopener">khoebo.onrender.com</a>. Source: <a href="https://github.com/DevnProgg/khoebo" target="_blank" rel="noopener">github.com/DevnProgg/khoebo</a>.</em></p>
+            <hr/>
+            <img src="../assets/images/khoebo-app.png" alt="Khoebo dashboard and point-of-sale receipt screens">
+
+            <h2>The problem is not the sale</h2>
+            <p>A shopkeeper can sell a loaf of bread in ten seconds. The difficult part starts after that: the stock level has to change, the money has to land in the right account, tax and discounts have to be represented somewhere, and the owner has to be able to answer “how did this month go?” without rebuilding the story from memory.</p>
+            <p>In many small businesses, that trail lives across a notebook, a phone, a spreadsheet and someone's head. The tools that promise to fix it often assume a desk, a stable connection and an accountant nearby. I built Khoebo around a different constraint: the person running the business is probably standing at the counter with a phone.</p>
+            <p>The name comes from the Sesotho word for business. That was a deliberate starting point. If the product is meant for businesses in Lesotho, the language and the working conditions should shape the design, not be added after the architecture is finished.</p>
+
+            <h2>What Khoebo actually does</h2>
+            <p>Khoebo supports multiple businesses under one account, with memberships and roles. Inside a business, it covers the daily loop:</p>
+            <ul>
+              <li>products, SKUs, pricing and stock levels with a stock movement trail;</li>
+              <li>a point-of-sale flow that creates sales, receipts and refunds;</li>
+              <li>a seeded chart of accounts and double-entry journal entries for sales and expenses;</li>
+              <li>reports and analytics for revenue, profit, stock value, low stock, top products and payment mix;</li>
+              <li>reminders for follow-ups and low-stock situations;</li>
+              <li>an English and Sesotho interface on Android, iOS and the web.</li>
+            </ul>
+            <p>Those features are not separate demos. They are different views of the same business events.</p>
+
+            <h2>The stack, and why it is there</h2>
+            <table>
+              <thead>
+                <tr><th>Layer</th><th>Choice</th><th>Reason</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>API</td><td>FastAPI, Pydantic, SQLAlchemy, Alembic</td><td>Fast iteration with typed request and response contracts, explicit migrations and a testable service layer.</td></tr>
+                <tr><td>Database</td><td>PostgreSQL in production, SQLite in tests and local work</td><td>One model layer, with foreign keys and batch migration support handled explicitly.</td></tr>
+                <tr><td>Mobile</td><td>Expo, React Native, React Native Web, TanStack Query</td><td>One TypeScript app for native and web, with server state kept out of component state.</td></tr>
+                <tr><td>Offline</td><td>SQLite cache and request queue on native</td><td>Reads can fall back to cached responses and writes can wait for connectivity instead of disappearing.</td></tr>
+                <tr><td>Security</td><td>Argon2id, rotating hashed refresh tokens, JWTs, role checks</td><td>Credentials and business access stay scoped, revocable and auditable.</td></tr>
+              </tbody>
+            </table>
+            <p>The app is served as a static Expo web export by the same FastAPI service that exposes <code>/api/v1</code>, with a fallback to the SPA for clean URLs. That keeps the deployed product simple: one service, one API surface, one place to reason about headers and routing.</p>
+
+            <h2>One sale, several promises</h2>
+            <p>The sale service is where the product's claims become real. When a sale is created, the product rows are locked, inactive products and products from another business are rejected, item costs are preserved on the sale line, stock is deducted, and journal entries are posted in the same database transaction. If any part of that chain fails, the sale does not half-exist.</p>
+            <p>The journal is not a decorative ledger. It uses a default chart of accounts seeded when the business is created, and records cash, revenue, discounts, tax payable, cost of goods sold and inventory. Bookkeeping entries entered directly are held to the same rules: at least two lines, balanced debits and credits, non-zero totals, non-negative lines and accounts owned by the business.</p>
+            <p>Refunds reverse that story instead of inventing a new one. A refund restores stock and reverses the original journal entry, keeping the link between the event and its correction. Stock adjustments are equally strict: no negative stock, no non-positive in or out quantities.</p>
+            <p>This is the part of the system that matters most to me. Not the number of screens, but the fact that a sale, a receipt, a stock level, a journal and a report all agree.</p>
+
+            <h2>Tenancy is not just a filter</h2>
+            <p>A multi-business application has one dangerous shortcut: trusting a business id supplied by the client. Khoebo resolves the current user from the token, loads the membership for the requested business, and enforces roles through dependencies before a route does any work. Business creation adds the creator as the owner and seeds the accounts. Products, sales, accounts, expenses and reminders cascade from the business they belong to.</p>
+            <p>There are production guardrails too. Weak or default secrets are rejected, automatic table creation is refused in production, API docs are disabled there, and security headers are attached to responses. Currency is deliberately fixed to LSL for now. Saying “not yet” clearly is safer than pretending the system handles money it has not been designed to handle.</p>
+
+            <h2>Offline is a promise you have to keep</h2>
+            <p>The mobile client treats the network as unreliable. Cached GET responses can serve reads when a request fails, and writes that cannot reach the server are queued and flushed when connectivity returns. Token refresh happens in the API layer rather than in every screen. SecureStore holds tokens on native; AsyncStorage keeps language and tour preferences.</p>
+            <p>I am careful about how this is described. The SQLite-backed cache and queue are native features. On web, there is no native database, so the offline story is narrower. That distinction is visible in the code and should be visible in the product too.</p>
+
+            <h2>Testing the boring paths</h2>
+            <p>The backend tests run against in-memory SQLite and cover the unglamorous things: migrations going up and down, static web routes and SPA fallback, and a full owner and staff journey through products, sales, reminders, expenses, reports, analytics and refunds. Those tests are less exciting than a new screen, but they are what let me change the sale pipeline without fearing that the books will quietly drift.</p>
+            <p>For the walkthrough, I recorded the real Expo web app in a 390×844 mobile viewport. The first render exposed a layout bug: the browser content occupied only part of the video canvas and left the rest grey. The capture size and viewport had to agree, so I fixed the recording setup, re-recorded the full flow and composed it to 1080×1920 without stretching. The thumbnail above comes from that corrected footage.</p>
+            <p>That bug was a useful reminder. A demo is still a build artifact. If the viewport is wrong, the story is wrong.</p>
+
+            <h2>Where it stops today</h2>
+            <p>Khoebo is LSL-only. Monthly reminders currently use a 30-day interval rather than calendar-month arithmetic. Native devices get the SQLite-backed offline queue; web does not. Production concerns such as TLS termination, backups, rate limiting and secret rotation remain deployment responsibilities rather than features the repository magically solves.</p>
+            <p>Those limits are not footnotes. They are the current edge of the system, and they are the next places I would work.</p>
+
+            <h2>The feature you do not see</h2>
+            <p>The most important part of Khoebo is the chain of agreement behind an ordinary action. Someone taps three products, chooses a payment method and completes a sale. Underneath, stock moves, a journal balances, a receipt appears and a report changes. The next day, on another device, the numbers are still there.</p>
+            <p>That is what I wanted to build: not a collection of business screens, but one connected place where the quiet work behind a business stays correct.</p>
+            <hr/>
+            <p><a href="https://khoebo.onrender.com" target="_blank" rel="noopener">Try the live app</a> · <a href="https://github.com/DevnProgg/khoebo" target="_blank" rel="noopener">Read the source on GitHub</a></p>
+          </article>
+        </section>
+
+        <footer class="site-footer">
+          <p>&copy; 2026 Lauren Qokolo</p>
+          <a href="../Pages/blog.html">All posts</a>
+        </footer>
+      </main>
+    </div>
+    <script src="../site.js"></script>
+  </body>
+</html>
